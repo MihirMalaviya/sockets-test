@@ -914,7 +914,7 @@ const io = require("socket.io")(server, {
 });
 
 app.get("/", (req, res) => {
-  console.log("hello world");
+  console.log("__dirname = " + __dirname);
   res.sendFile(__dirname + "/index.html");
 });
 
