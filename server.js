@@ -916,19 +916,31 @@ const io = require("socket.io")(server, {
 app.get("/", (req, res) => {
   console.log("__dirname = " + __dirname);
 
-  // Import the filesystem module
   const fs = require("fs");
+  const path = require("path");
 
-  let directory_name = "/";
+  function readDirectory(directoryPath) {
+    // Read the contents of the directory
+    const filenames = fs.readdirSync(directoryPath);
 
-  // Function to get current filenames
-  // in directory
-  let filenames = fs.readdirSync(directory_name);
+    filenames.forEach((filename) => {
+      // Get the full path of the current file or directory
+      const filePath = path.join(directoryPath, filename);
 
-  console.log("\nFilenames in directory:");
-  filenames.forEach((file) => {
-    console.log("File:", file);
-  });
+      // Check if it's a file or a directory
+      const stats = fs.statSync(filePath);
+      if (stats.isFile()) {
+        console.log("File:", filePath);
+      } else if (stats.isDirectory()) {
+        console.log("Directory:", filePath);
+        // Recursively read the subdirectory
+        readDirectory(filePath);
+      }
+    });
+  }
+
+  const directoryPath = "/"; // Set the directory path here
+  readDirectory(directoryPath);
 
   res.sendFile(__dirname + "/index.html");
 });
