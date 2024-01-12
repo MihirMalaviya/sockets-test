@@ -1,0 +1,25 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore environment variables file
+.env
+
+# Ignore npm's debug log
+npm-debug.log
+
+# Ignore yarn's lock file
+yarn.lock
+
+# Ignore local configuration
+config.js
+
+# Ignore build output
+/build/
+
+# Ignore dependencies installed by the package manager
+package-lock.json
+.pnp
+.pnp.js
