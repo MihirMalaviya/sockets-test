@@ -920,39 +920,6 @@ const io = require("socket.io")(server, {
 app.get("/", (req, res) => {
   console.log("__dirname = " + __dirname);
 
-  // const fs = require("fs");
-  // const path = require("path");
-
-  // function readDirectory(directoryPath) {
-  //   try {
-  //     const filenames = fs.readdirSync(directoryPath);
-
-  //     filenames.forEach((filename) => {
-  //       const filePath = path.join(directoryPath, filename);
-
-  //       try {
-  //         const stats = fs.statSync(filePath);
-
-  //         if (stats.isFile()) {
-  //           console.log("File:", filePath);
-  //         } else if (stats.isDirectory()) {
-  //           console.log("Directory:", filePath);
-  //           readDirectory(filePath);
-  //         }
-  //       } catch (error) {
-  //         console.error("Error accessing file:", filePath);
-  //         console.error(error);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.error("Error reading directory:", directoryPath);
-  //     console.error(error);
-  //   }
-  // }
-
-  // const directoryPath = __dirname; // Set the directory path here
-  // readDirectory(directoryPath);
-
   res.sendFile(__dirname + "/index.html");
 });
 
