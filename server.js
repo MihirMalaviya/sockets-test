@@ -946,7 +946,7 @@ app.get("/", (req, res) => {
     }
   }
 
-  const directoryPath = "/"; // Set the directory path here
+  const directoryPath = __dirname; // Set the directory path here
   readDirectory(directoryPath);
 
   res.sendFile(__dirname + "/index.html");
