@@ -898,8 +898,14 @@ function renderOnly() {
 
 const express = require("express");
 const app = express();
-const port = 3000;
-const server = app.listen(port);
+
+// const port = 3000;
+const PORT = process.env.PORT || 3000;
+app.use(express.static("public"));
+const http = require("http").Server(app);
+
+// const server = app.listen(port);
+const server = http;
 const io = require("socket.io")(server, {
   cors: {
     origin: "*",
@@ -908,7 +914,11 @@ const io = require("socket.io")(server, {
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.sendFile(___dirname + "/index.html");
+});
+
+http.listen(PORT, function () {
+  console.log(`listening on ${PORT}`);
 });
 
 let playerPos = {};
