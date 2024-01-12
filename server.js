@@ -915,7 +915,7 @@ const io = require("socket.io")(server, {
 
 app.get("/", (req, res) => {
   console.log("hello world");
-  res.sendFile(___dirname + "/index.html");
+  res.sendFile(__dirname + "/index.html");
 });
 
 http.listen(PORT, function () {
