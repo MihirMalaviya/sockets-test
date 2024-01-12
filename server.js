@@ -906,6 +906,10 @@ const http = require("http").Server(app);
 
 // const server = app.listen(port);
 const server = http;
+
+server.keepAliveTimeout = 120 * 1000;
+server.headersTimeout = 120 * 1000;
+
 const io = require("socket.io")(server, {
   cors: {
     origin: "*",

@@ -19,11 +19,7 @@ socket.on("connect", () => {
   userInput(clientBalls[socket.id]);
   socket.emit("newPlayer", { x: startX, y: startY });
 });
-// socket.on("ClientServerHello", (data) => {
-//   alert(data);
-// });
 
-// socket.emit("newPlayer", { x: startX, y: startY });
 socket.on("updatePlayers", (players) => {
   ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
   playersFound = {};
@@ -50,5 +46,4 @@ socket.on("positionUpdate", (playerPos) => {
   }
 });
 
-// userInput(playerBall);
 requestAnimationFrame(renderOnly);
