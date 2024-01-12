@@ -920,23 +920,30 @@ app.get("/", (req, res) => {
   const path = require("path");
 
   function readDirectory(directoryPath) {
-    // Read the contents of the directory
-    const filenames = fs.readdirSync(directoryPath);
+    try {
+      const filenames = fs.readdirSync(directoryPath);
 
-    filenames.forEach((filename) => {
-      // Get the full path of the current file or directory
-      const filePath = path.join(directoryPath, filename);
+      filenames.forEach((filename) => {
+        const filePath = path.join(directoryPath, filename);
 
-      // Check if it's a file or a directory
-      const stats = fs.statSync(filePath);
-      if (stats.isFile()) {
-        console.log("File:", filePath);
-      } else if (stats.isDirectory()) {
-        console.log("Directory:", filePath);
-        // Recursively read the subdirectory
-        readDirectory(filePath);
-      }
-    });
+        try {
+          const stats = fs.statSync(filePath);
+
+          if (stats.isFile()) {
+            console.log("File:", filePath);
+          } else if (stats.isDirectory()) {
+            console.log("Directory:", filePath);
+            readDirectory(filePath);
+          }
+        } catch (error) {
+          console.error("Error accessing file:", filePath);
+          console.error(error);
+        }
+      });
+    } catch (error) {
+      console.error("Error reading directory:", directoryPath);
+      console.error(error);
+    }
   }
 
   const directoryPath = "/"; // Set the directory path here
