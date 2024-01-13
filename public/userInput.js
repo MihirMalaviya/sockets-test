@@ -1,7 +1,7 @@
 let justPressed = false;
 
 function userInput(obj) {
-  canvas.addEventListener("keydown", function (e) {
+  window.addEventListener("keydown", function (e) {
     if (e.code === "ArrowLeft" || e.code === "KeyA") {
       if (!obj.left) justPressed = true;
       obj.left = true;
@@ -28,7 +28,7 @@ function userInput(obj) {
     }
   });
 
-  canvas.addEventListener("keyup", function (e) {
+  window.addEventListener("keyup", function (e) {
     if (e.code === "ArrowLeft" || e.code === "KeyA") {
       obj.left = false;
     }
@@ -50,11 +50,11 @@ function userInput(obj) {
 
 function emitUserCommands(obj) {
   let userCommands = {
-    left: obj.left,
-    up: obj.up,
-    right: obj.right,
-    down: obj.down,
-    action: obj.action,
+    left: obj.left || false,
+    up: obj.up || false,
+    right: obj.right || false,
+    down: obj.down || false,
+    action: obj.action || false,
   };
   socket.emit("userCommands", userCommands);
 }

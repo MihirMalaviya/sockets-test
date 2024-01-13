@@ -1,29 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-        #canvas {
-            border: 1px solid black;
-            display: block;
-            margin: 0 auto;
-            background: #fffacc;
-        }
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+
+      #canvas {
+        border: 1px solid black;
+        display: block;
+        margin: 0 auto;
+        background: #6f8656;
+
+        width: 100%;
+        height: 100%;
+
+        border-radius: 0%;
+      }
+
+      #canvas:focus-visible {
+        outline: none;
+      }
+
+      #gameArea {
+        display: none;
+      }
+
+      #formContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      #userForm {
+        position: absolute;
+        text-align: center;
+      }
+
+      .center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .center > * {
+        margin: 5px;
+        margin-top: 10px;
+      }
     </style>
     <title>networking test</title>
-</head>
-<body>
-    <canvas id="canvas" tabindex=0 width=640 height=480></canvas>
-    
+  </head>
+  <body>
+    <div id="formContainer">
+      <form action="" id="userForm">
+        <span>Enter your name and press GO</span>
+        <div class="center">
+          <input id="userName" required maxlength="12" autocomplete="off" />
+          <button type="submit">GO</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="gameArea">
+      <!-- <canvas id="canvas" tabindex="0" width="640" height="480"></canvas> -->
+      <!-- <canvas id="canvas" tabindex="0"></canvas> -->
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.3/socket.io.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.3/pixi.min.js"></script>
+
     <script src="mogorgo.js"></script>
     <script src="userInput.js"></script>
     <script src="client.js"></script>
-    
-    <!-- <script src="/opt/render/project/src/mogorgo.js"></script>
-    <script src="/opt/render/project/src/userInput.js"></script>
-    <script src="/opt/render/project/src/client.js"></script> -->
-</body>
+  </body>
 </html>

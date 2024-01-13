@@ -1,19 +1,27 @@
 // const socket = io.connect("http://localhost:3000");
 const socket = io.connect("");
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const form = document.getElementById("userForm");
+const formDiv = document.getElementById("formContainer");
+const gameAreaDiv = document.getElementById("gameArea");
+
+const app = new PIXI.Application({
+  width: window.innerWidth,
+  height: window.innerHeight,
+  backgroundColor: 0x777777, // Set the background color
+  antialias: true,
+});
+
+document.getElementById("gameArea").appendChild(app.view);
 
 let clientBalls = {};
 let selfID;
-
-putWallsAround(0, 0, canvas.clientWidth, canvas.clientHeight);
 
 socket.on("connect", () => {
   selfID = socket.id;
   let startX = 40 + Math.random() * 560;
   let startY = 40 + Math.random() * 400;
-  clientBalls[socket.id] = new Ball(startX, startY, 16, 5);
+  clientBalls[socket.id] = new Player(startX, startY, 32);
   clientBalls[socket.id].player = true;
   clientBalls[socket.id].maxSpeed = 5;
   userInput(clientBalls[socket.id]);
@@ -21,18 +29,22 @@ socket.on("connect", () => {
 });
 
 socket.on("updatePlayers", (players) => {
-  ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
   playersFound = {};
   for (let id in players) {
+    // if we dont have the player and it is not us
     if (clientBalls[id] === undefined && id !== socket.id) {
-      clientBalls[id] = new Ball(players[id].x, players[id].y, 16, 5);
+      // make a new player
+      clientBalls[id] = new Player(players[id].x, players[id].y, 32);
       clientBalls[id].maxSpeed = 5;
     }
     playersFound[id] = true;
+
+    console.log(players[id]);
   }
+
+  // if a player was not in players, that means it had to have been deleted so we delete here
   for (let id in clientBalls) {
     if (!playersFound[id]) {
-      clientBalls[id].remove();
       delete clientBalls[id];
     }
   }
@@ -46,4 +58,33 @@ socket.on("positionUpdate", (playerPos) => {
   }
 });
 
+function renderOnly() {
+  app.stage.removeChildren();
+
+  for (let id of Object.keys(clientBalls).reverse()) {
+    // reversed, because the player is first in the dict and we want the player to appear on top
+
+    clientBalls[id].draw();
+  }
+  // userInterface();
+
+  requestAnimationFrame(renderOnly);
+}
+
 requestAnimationFrame(renderOnly);
+
+window.addEventListener("resize", () => {
+  app.renderer.resize(window.innerWidth, window.innerHeight);
+});
+
+// form.onsubmit = function (e) {
+//   e.preventDefault();
+formDiv.style.display = "none";
+gameAreaDiv.style.display = "block";
+
+//   console.log("your name is " + document.getElementById("userName").value);
+
+//   // clientBalls[selfID].name = document.getElementById("userName").value;
+//   // socket.emit("clientName", clientBalls[selfID].name);
+//   return false;
+// };
