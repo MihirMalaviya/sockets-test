@@ -910,7 +910,7 @@ function mainLoop() {
   requestAnimationFrame(mainLoop);
 }
 
-function renderOnly() {
+function render() {
   renderLoop();
-  requestAnimationFrame(renderOnly);
+  requestAnimationFrame(render);
 }

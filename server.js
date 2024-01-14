@@ -1,3 +1,5 @@
+const DEPLOY = 1;
+
 class Vector {
   constructor(x, y) {
     this.x = x;
@@ -111,8 +113,6 @@ class Player {
 }
 
 // START //
-
-const DEPLOY = true;
 
 const express = require("express");
 const app = express();

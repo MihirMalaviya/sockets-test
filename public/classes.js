@@ -1,3 +1,7 @@
+function lerp(start, end, t) {
+  return start * (1 - t) + end * t;
+}
+
 class Vector {
   constructor(x, y) {
     this.x = x;
@@ -48,24 +52,42 @@ class Vector {
   static distance(v1, v2) {
     return v2.subtr(v1);
   }
+
+  static lerp(v1, v2, t) {
+    return new Vector(lerp(v1.x, v2.x, t), lerp(v1.y, v2.y, t));
+  }
 }
+
+const HALF_PI = Math.PI / 2;
+const ANGLE_PRECISION = (2 * Math.PI) / (360 / 5);
 
 class Player {
   constructor(x, y, r) {
     this.pos = new Vector(x, y);
     this.vel = new Vector(0, 0);
+    this.angle = 0;
     this.r = r;
 
     this.container = new PIXI.Container();
 
     const graphics = new PIXI.Graphics();
 
+    const handSize = this.r * 0.375;
+    const handOffset = this.r * 0.75;
+
+    graphics.lineStyle(5, 0x35354d);
+
+    graphics.beginFill(0x7c5d4f);
+    graphics.drawCircle(handOffset, handOffset, handSize);
+    graphics.endFill();
+
+    graphics.beginFill(0x7c5d4f);
+    graphics.drawCircle(-handOffset, handOffset, handSize);
+    graphics.endFill();
+
     graphics.beginFill(0x7c5d4f);
     graphics.drawCircle(0, 0, this.r);
     graphics.endFill();
-
-    graphics.lineStyle(5, 0x35354d);
-    graphics.drawCircle(0, 0, this.r);
 
     this.container.addChild(graphics);
   }
@@ -75,28 +97,47 @@ class Player {
     this.pos.y = y;
   }
 
+  setRotation(theta) {
+    this.angle = theta - (theta % ANGLE_PRECISION);
+  }
+
   draw() {
     // graphics.drawCircle(this.pos.x, this.pos.y, this.r);
 
     this.container.x = this.pos.x;
     this.container.y = this.pos.y;
 
-    app.stage.addChild(this.container);
+    this.container.rotation = this.angle - HALF_PI;
+
+    mainContainer.addChild(this.container);
 
     this.debug();
   }
 
   debug() {
-    const bounds = this.container.getBounds();
-
     const graphics = new PIXI.Graphics();
-    graphics.lineStyle(2, 0xff0000);
-    graphics.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    // app.stage.addChild(graphics);
 
     graphics.lineStyle(2, 0x0000ff);
     graphics.drawRect(this.pos.x, this.pos.y, 1, 1);
 
-    app.stage.addChild(graphics);
+    mainContainer.addChild(graphics);
+  }
+}
+
+class Camera {
+  constructor() {
+    this.pos = new Vector(0, 0);
+    this.targetPos = new Vector(0, 0);
+    this.lerpFactor = 0.05;
+  }
+
+  updateCamera() {
+    this.pos = Vector.lerp(this.pos, this.targetPos, this.lerpFactor);
+
+    // console.log(`camera position: x=${this.pos.x}, y=${this.pos.y}`);
+  }
+
+  setTargetPosition(pos) {
+    this.targetPos = pos;
   }
 }

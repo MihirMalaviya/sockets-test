@@ -1,4 +1,4 @@
-const DEPLOY = true;
+const DEPLOY = 1;
 
 let socket;
 
@@ -14,21 +14,29 @@ const gameAreaDiv = document.getElementById("gameArea");
 
 const mainContainer = new PIXI.Container();
 
+const canvas = document.getElementById("canvas");
+
 const app = new PIXI.Application({
   width: window.innerWidth,
   height: window.innerHeight,
   backgroundColor: 0x777777, // Set the background color
   antialias: true,
 
-  view: document.getElementById("canvas"),
+  view: canvas,
 });
 
-mainContainer.addChild(app.stage);
+// mainContainer.addChild(app.stage);
+app.stage.addChild(mainContainer);
 
 document.getElementById("gameArea").appendChild(app.view);
 
 let clientBalls = {};
 let selfID;
+
+let zoom = 100;
+
+// let t = 0;
+let camera = new Camera();
 
 socket.on("connect", () => {
   selfID = socket.id;
@@ -71,8 +79,40 @@ socket.on("positionUpdate", (playerPos) => {
   }
 });
 
-function renderOnly() {
+canvas.style.width = `${101 / window.devicePixelRatio}vw`;
+
+window.addEventListener("resize", () => {
+  canvas.style.width = `${101 / window.devicePixelRatio}vw`;
+});
+
+document.addEventListener("mousemove", function (event) {
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  const mouseX = event.clientX;
+  const mouseY = event.clientY;
+
+  clientBalls[selfID].setRotation(
+    Math.atan2(mouseY - centerY, mouseX - centerX)
+  );
+
+  // console.log("Angle in radians:", clientBalls[selfID].angle);
+});
+
+function render() {
   app.stage.removeChildren();
+  mainContainer.removeChildren();
+
+  if (selfID) {
+    camera.setTargetPosition(clientBalls[selfID].pos);
+    camera.updateCamera();
+
+    mainContainer.x = -camera.pos.x + canvas.width / 2;
+    mainContainer.y = -camera.pos.y + canvas.height / 2;
+    // console.log(1 / zoom);
+    // mainContainer.scale.set(1 / zoom);
+    app.stage.addChild(mainContainer);
+  }
 
   // reversed, because the player is first in the dict and we want the player to appear on top
   for (let id of Object.keys(clientBalls).reverse()) {
@@ -80,10 +120,10 @@ function renderOnly() {
   }
   // userInterface();
 
-  requestAnimationFrame(renderOnly);
+  requestAnimationFrame(render);
 }
 
-requestAnimationFrame(renderOnly);
+requestAnimationFrame(render);
 
 // window.addEventListener("resize", () => {
 //   // app.renderer.resize(window.innerWidth, window.innerHeight);
