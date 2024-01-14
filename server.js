@@ -77,8 +77,8 @@ class Player {
 
     if (distanceVec.mag() <= r * 2) {
       const dir = distanceVec.unit();
-      this.vel.x += dir.x * 1;
-      this.vel.y += dir.y * 1;
+      this.vel.x += dir.x * 1.5;
+      this.vel.y += dir.y * 1.5;
     }
   }
 
@@ -186,11 +186,9 @@ function connected(socket) {
   //     // console.log(playerData[id]);
   //   }
   //   io.emit("updateNames", playerData);
-
   // });
 
   socket.on("disconnect", function () {
-    // serverBalls[socket.id].remove();
     delete serverBalls[socket.id];
     delete playerData[socket.id];
     console.log("Goodbye client with id " + socket.id);
@@ -215,10 +213,6 @@ function connected(socket) {
     console.log(`${data.x} -- ${data.y}`);
   });
 
-  // socket.on("ClientClientHello", (data) => {
-  //   socket.broadcast.emit("ClientServerHello", data);
-  // });
-
   socket.on("clientName", (data) => {
     serverBalls[socket.id].name = data;
     console.log(`${data} joined`);
@@ -226,9 +220,6 @@ function connected(socket) {
 }
 
 function serverLoop() {
-  // userInteraction();
-  // physicsLoop();
-
   for (let id in serverBalls) {
     serverBalls[id].update();
   }

@@ -12,12 +12,16 @@ const form = document.getElementById("userForm");
 const formDiv = document.getElementById("formContainer");
 const gameAreaDiv = document.getElementById("gameArea");
 
+const mainContainer = new PIXI.Container();
+
 const app = new PIXI.Application({
   width: window.innerWidth,
   height: window.innerHeight,
   backgroundColor: 0x777777, // Set the background color
   antialias: true,
 });
+
+mainContainer.addChild(app.stage);
 
 document.getElementById("gameArea").appendChild(app.view);
 
@@ -68,9 +72,8 @@ socket.on("positionUpdate", (playerPos) => {
 function renderOnly() {
   app.stage.removeChildren();
 
+  // reversed, because the player is first in the dict and we want the player to appear on top
   for (let id of Object.keys(clientBalls).reverse()) {
-    // reversed, because the player is first in the dict and we want the player to appear on top
-
     clientBalls[id].draw();
   }
   // userInterface();
