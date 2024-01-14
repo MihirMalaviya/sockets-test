@@ -112,19 +112,28 @@ class Player {
 
 // START //
 
+const DEPLOY = true;
+
 const express = require("express");
 const app = express();
 
 const port = 3000;
 const PORT = process.env.PORT || port;
 app.use(express.static("public"));
-const http = require("http").Server(app);
 
-// const server = app.listen(port);
-const server = http;
+let http;
+let server;
 
-server.keepAliveTimeout = 120 * 1000;
-server.headersTimeout = 120 * 1000;
+if (DEPLOY) {
+  http = require("http").Server(app);
+
+  server = http;
+
+  server.keepAliveTimeout = 120 * 1000;
+  server.headersTimeout = 120 * 1000;
+} else {
+  server = app.listen(port);
+}
 
 const io = require("socket.io")(server, {
   cors: {
@@ -139,9 +148,11 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-http.listen(PORT, function () {
-  console.log(`listening on ${PORT}`);
-});
+if (DEPLOY) {
+  http.listen(PORT, function () {
+    console.log(`listening on ${PORT}`);
+  });
+}
 
 let playerData = {};
 let serverBalls = {};

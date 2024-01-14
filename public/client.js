@@ -1,5 +1,12 @@
-// const socket = io.connect("http://localhost:3000");
-const socket = io.connect("");
+const DEPLOY = true;
+
+let socket;
+
+if (DEPLOY) {
+  socket = io.connect("");
+} else {
+  socket = io.connect("http://localhost:3000");
+}
 
 const form = document.getElementById("userForm");
 const formDiv = document.getElementById("formContainer");
