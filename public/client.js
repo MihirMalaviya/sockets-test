@@ -19,7 +19,7 @@ const canvas = document.getElementById("canvas");
 const app = new PIXI.Application({
   width: window.innerWidth,
   height: window.innerHeight,
-  backgroundColor: 0x777777, // Set the background color
+  backgroundColor: 0x777777,
   antialias: true,
 
   view: canvas,
@@ -74,10 +74,21 @@ socket.on("updatePlayers", (players) => {
 socket.on("positionUpdate", (playerPos) => {
   for (let id in playerPos) {
     if (clientBalls[id] !== undefined) {
-      clientBalls[id].setPosition(playerPos[id].x, playerPos[id].y);
+      if (playerPos[id].x) clientBalls[id].pos.x = playerPos[id].x;
+      if (playerPos[id].y) clientBalls[id].pos.y = playerPos[id].y;
+      if (playerPos[id].a && id != selfID)
+        clientBalls[id].angle = deg2Rad(playerPos[id].a * 5 - 180);
     }
   }
 });
+
+// socket.on("rotationUpdate", (playerPos) => {
+//   for (let id in playerPos) {
+//     if (clientBalls[id] !== undefined) {
+//       clientBalls[id].setRotation(playerPos[id]);
+//     }
+//   }
+// });
 
 canvas.style.width = `${101 / window.devicePixelRatio}vw`;
 
@@ -86,24 +97,37 @@ window.addEventListener("resize", () => {
 });
 
 document.addEventListener("mousemove", function (event) {
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
+  if (selfID) {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
 
-  const mouseX = event.clientX;
-  const mouseY = event.clientY;
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
 
-  clientBalls[selfID].setRotation(
-    Math.atan2(mouseY - centerY, mouseX - centerX)
-  );
+    clientBalls[selfID].setRotation(
+      Math.atan2(mouseY - centerY, mouseX - centerX)
+    );
 
-  // console.log("Angle in radians:", clientBalls[selfID].angle);
+    // console.log("Angle in radians:", clientBalls[selfID].angle);
+  }
 });
 
+let last_rotation = 0;
+
+let i = 0;
 function render() {
   app.stage.removeChildren();
   mainContainer.removeChildren();
-
   if (selfID) {
+    if (i % 2 == 0) {
+      const roundedRotation = clientBalls[selfID].getRoundedRotation();
+      if (roundedRotation != last_rotation) {
+        last_rotation = roundedRotation;
+        // console.log(roundedRotation);
+        socket.emit("userRotation", roundedRotation);
+      }
+    }
+
     camera.setTargetPosition(clientBalls[selfID].pos);
     camera.updateCamera();
 
@@ -121,6 +145,9 @@ function render() {
   // userInterface();
 
   requestAnimationFrame(render);
+
+  i += 1;
+  i %= 30;
 }
 
 requestAnimationFrame(render);
@@ -142,6 +169,7 @@ requestAnimationFrame(render);
 //   e.preventDefault();
 formDiv.style.display = "none";
 gameAreaDiv.style.display = "block";
+canvas.focus();
 
 //   console.log("your name is " + document.getElementById("userName").value);
 

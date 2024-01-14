@@ -76,7 +76,6 @@
     "vary": "^1.1.2",
     "ws": "^8.11.0"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm install && node server.js"

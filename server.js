@@ -59,6 +59,7 @@ class Player {
     this.pos = new Vector(x, y);
     this.vel = new Vector(0, 0);
     this.acc = new Vector(0, 0);
+    this.angle = 0;
     this.r = r;
     this.speed = speed;
 
@@ -163,8 +164,11 @@ setInterval(serverLoop, 1000 / 60);
 function connected(socket) {
   socket.on("newPlayer", (data) => {
     console.log("New client connected, with id: " + socket.id);
+
     serverBalls[socket.id] = new Player(data.x, data.y, 32, 2);
     serverBalls[socket.id].maxSpeed = 5;
+    data = { x: Math.round(data.x), y: Math.round(data.y) };
+
     playerData[socket.id] = data;
     console.log(
       "Starting position: " +
@@ -174,7 +178,30 @@ function connected(socket) {
     );
     console.log("Current number of players: " + Object.keys(playerData).length);
     console.log("players dictionary: ", playerData);
+
     io.emit("updatePlayers", playerData);
+    // console.log(
+    //   `Size of data: ${Buffer.byteLength(
+    //     JSON.stringify(playerData),
+    //     "utf8"
+    //   )} bytes`
+    // );
+  });
+
+  socket.on("disconnect", function () {
+    delete serverBalls[socket.id];
+    delete playerData[socket.id];
+    console.log("Goodbye client with id " + socket.id);
+    console.log("Current number of players: " + Object.keys(playerData).length);
+    console.log("players dictionary: ", playerData);
+
+    io.emit("updatePlayers", playerData);
+    // console.log(
+    //   `Size of data: ${Buffer.byteLength(
+    //     JSON.stringify(playerData),
+    //     "utf8"
+    //   )} bytes`
+    // );
   });
 
   // need to fix logic
@@ -188,18 +215,9 @@ function connected(socket) {
   //   io.emit("updateNames", playerData);
   // });
 
-  socket.on("disconnect", function () {
-    delete serverBalls[socket.id];
-    delete playerData[socket.id];
-    console.log("Goodbye client with id " + socket.id);
-    console.log("Current number of players: " + Object.keys(playerData).length);
-    console.log("players dictionary: ", playerData);
-    io.emit("updatePlayers", playerData);
-  });
-
   socket.on("userCommands", (data) => {
-    console.log(serverBalls[socket.id]);
-    console.log(data);
+    // console.log(serverBalls[socket.id]);
+    // console.log(data);
     serverBalls[socket.id].left = data.left;
     serverBalls[socket.id].up = data.up;
     serverBalls[socket.id].right = data.right;
@@ -209,25 +227,61 @@ function connected(socket) {
     serverBalls[socket.id].input();
   });
 
-  socket.on("update", (data) => {
-    console.log(`${data.x} -- ${data.y}`);
+  socket.on("userRotation", (angle) => {
+    if (serverBalls[socket.id]) serverBalls[socket.id].angle = angle || 0;
+    // console.log(angle);
   });
 
-  socket.on("clientName", (data) => {
-    serverBalls[socket.id].name = data;
-    console.log(`${data} joined`);
-  });
+  // socket.on("update", (data) => {
+  //   console.log(`${data.x} -- ${data.y}`);
+  // });
+
+  // socket.on("clientName", (data) => {
+  //   serverBalls[socket.id].name = data;
+  //   console.log(`${data} joined`);
+  // });
 }
+
+// let i = 0;
+
+const POSITION_PRECISION = 2;
 
 function serverLoop() {
   for (let id in serverBalls) {
     serverBalls[id].update();
   }
 
+  let newData = {};
   for (let id in serverBalls) {
-    playerData[id].x = serverBalls[id].pos.x;
-    playerData[id].y = serverBalls[id].pos.y;
+    newData[id] = {};
+
+    const roundX =
+      serverBalls[id].pos.x - (serverBalls[id].pos.x % POSITION_PRECISION);
+    const roundY =
+      serverBalls[id].pos.y - (serverBalls[id].pos.y % POSITION_PRECISION);
+
+    if (roundX !== playerData[id].x) {
+      newData[id].x = playerData[id].x = roundX;
+    }
+    if (roundY !== playerData[id].y) {
+      newData[id].y = playerData[id].y = roundY;
+    }
+
+    if (serverBalls[id].angle !== playerData[id].a) {
+      newData[id].a = playerData[id].a = serverBalls[id].angle;
+    }
+
+    if (Object.keys(newData[id]).length === 0) {
+      delete newData[id];
+    }
   }
-  // console.log(playerData);
-  io.emit("positionUpdate", playerData);
+
+  if (
+    !Object.values(newData).every((value) => Object.keys(value).length === 0)
+  ) {
+    // console.log(newData);
+    io.emit("positionUpdate", newData);
+  }
+  // i += 1;
+  // i %= 30;
 }

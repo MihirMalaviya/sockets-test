@@ -1,7 +1,7 @@
 let justPressed = false;
 
 function userInput(obj) {
-  window.addEventListener("keydown", function (e) {
+  canvas.addEventListener("keydown", function (e) {
     if (e.code === "ArrowLeft" || e.code === "KeyA") {
       if (!obj.left) justPressed = true;
       obj.left = true;
@@ -28,7 +28,7 @@ function userInput(obj) {
     }
   });
 
-  window.addEventListener("keyup", function (e) {
+  canvas.addEventListener("keyup", function (e) {
     if (e.code === "ArrowLeft" || e.code === "KeyA") {
       obj.left = false;
     }

@@ -2,6 +2,12 @@ function lerp(start, end, t) {
   return start * (1 - t) + end * t;
 }
 
+function lerpWithWrap(start, end, t) {
+  const pi2 = Math.PI * 2;
+  const difference = ((((end - start) % pi2) + pi2) % pi2) - Math.PI;
+  return start + difference * t;
+}
+
 class Vector {
   constructor(x, y) {
     this.x = x;
@@ -59,7 +65,16 @@ class Vector {
 }
 
 const HALF_PI = Math.PI / 2;
-const ANGLE_PRECISION = (2 * Math.PI) / (360 / 5);
+// const ANGLE_PRECISION = (2 * Math.PI) / (360 / 5);
+const ANGLE_PRECISION = 5;
+
+function rad2Deg(radians) {
+  return radians * (180 / Math.PI);
+}
+
+function deg2Rad(degrees) {
+  return degrees * (Math.PI / 180);
+}
 
 class Player {
   constructor(x, y, r) {
@@ -67,6 +82,8 @@ class Player {
     this.vel = new Vector(0, 0);
     this.angle = 0;
     this.r = r;
+
+    this.player = false;
 
     this.container = new PIXI.Container();
 
@@ -98,16 +115,31 @@ class Player {
   }
 
   setRotation(theta) {
-    this.angle = theta - (theta % ANGLE_PRECISION);
+    this.angle = theta;
+  }
+
+  getRoundedRotation() {
+    // return this.angle - (this.angle % ANGLE_PRECISION);
+    return (
+      Math.floor((this.angle * (180 / Math.PI)) / ANGLE_PRECISION) +
+      180 / ANGLE_PRECISION
+    );
   }
 
   draw() {
     // graphics.drawCircle(this.pos.x, this.pos.y, this.r);
 
-    this.container.x = this.pos.x;
-    this.container.y = this.pos.y;
+    // this.container.x = this.pos.x;
+    // this.container.y = this.pos.y;
 
-    this.container.rotation = this.angle - HALF_PI;
+    this.container.x = lerp(this.container.x, this.pos.x, 0.15);
+    this.container.y = lerp(this.container.y, this.pos.y, 0.15);
+
+    if (!this.player)
+      this.container.rotation =
+        lerpWithWrap(this.container.rotation - HALF_PI, this.angle, 0.33) +
+        HALF_PI;
+    else this.container.rotation = this.angle - HALF_PI;
 
     mainContainer.addChild(this.container);
 
