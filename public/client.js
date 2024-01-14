@@ -19,6 +19,8 @@ const app = new PIXI.Application({
   height: window.innerHeight,
   backgroundColor: 0x777777, // Set the background color
   antialias: true,
+
+  view: document.getElementById("canvas"),
 });
 
 mainContainer.addChild(app.stage);
@@ -83,9 +85,18 @@ function renderOnly() {
 
 requestAnimationFrame(renderOnly);
 
-window.addEventListener("resize", () => {
-  app.renderer.resize(window.innerWidth, window.innerHeight);
-});
+// window.addEventListener("resize", () => {
+//   // app.renderer.resize(window.innerWidth, window.innerHeight);
+
+//   const newWidth = window.innerWidth;
+//   const newHeight = window.innerHeight;
+
+//   app.renderer.resize(newWidth, newHeight);
+//   // app.stage.width = newWidth;
+//   // app.stage.height = newHeight;
+
+//   app.renderer.resolution = window.devicePixelRatio;
+// });
 
 // form.onsubmit = function (e) {
 //   e.preventDefault();
