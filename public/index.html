@@ -11,18 +11,20 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        /* height: 100vh; */
 
         /* background-color: black; */
       }
 
       #canvas {
         /* border: 1px solid black; */
-        display: block;
+        /* display: absolute; */
         /* background: #6f8656; */
 
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
+
+        /* width: 101vw; */
 
         /* border-radius: 0%; */
 
@@ -76,11 +78,12 @@
 
     <div id="gameArea">
       <!-- <canvas id="canvas" tabindex="0" width="640" height="480"></canvas> -->
-      <canvas id="canvas" tabindex="0"></canvas>
+      <canvas id="canvas" tabindex="0" type="image/webp"></canvas>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.3/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.3/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script> -->
 
     <script src="classes.js"></script>

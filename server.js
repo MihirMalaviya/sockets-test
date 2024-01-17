@@ -232,6 +232,12 @@ function connected(socket) {
     // console.log(angle);
   });
 
+  socket.on("userAttack", (lastHitTime) => {
+    if (serverBalls[socket.id])
+      serverBalls[socket.id].lastHitTime = lastHitTime || 0;
+    console.log(lastHitTime);
+  });
+
   // socket.on("update", (data) => {
   //   console.log(`${data.x} -- ${data.y}`);
   // });
@@ -242,8 +248,7 @@ function connected(socket) {
   // });
 }
 
-// let i = 0;
-
+let time = 0;
 const POSITION_PRECISION = 2;
 
 function serverLoop() {
@@ -271,6 +276,10 @@ function serverLoop() {
       newData[id].a = playerData[id].a = serverBalls[id].angle;
     }
 
+    if (serverBalls[id].lastHitTime !== playerData[id].lh) {
+      serverBalls[id].lastHitTime = newData[id].lh = playerData[id].lh = true;
+    }
+
     if (Object.keys(newData[id]).length === 0) {
       delete newData[id];
     }
@@ -279,9 +288,9 @@ function serverLoop() {
   if (
     !Object.values(newData).every((value) => Object.keys(value).length === 0)
   ) {
-    // console.log(newData);
+    console.log(newData);
     io.emit("positionUpdate", newData);
   }
-  // i += 1;
-  // i %= 30;
+
+  time += 1.0 / 60;
 }

@@ -15,6 +15,7 @@ const gameAreaDiv = document.getElementById("gameArea");
 const mainContainer = new PIXI.Container();
 
 const canvas = document.getElementById("canvas");
+// resizeEvent();
 
 const app = new PIXI.Application({
   width: window.innerWidth,
@@ -76,8 +77,11 @@ socket.on("positionUpdate", (playerPos) => {
     if (clientBalls[id] !== undefined) {
       if (playerPos[id].x) clientBalls[id].pos.x = playerPos[id].x;
       if (playerPos[id].y) clientBalls[id].pos.y = playerPos[id].y;
-      if (playerPos[id].a && id != selfID)
+      if (playerPos[id].a && id !== selfID)
         clientBalls[id].angle = deg2Rad(playerPos[id].a * 5 - 180);
+      if (playerPos[id].lh && id !== selfID) {
+        clientBalls[id].lastHitTime = time;
+      }
     }
   }
 });
@@ -90,11 +94,19 @@ socket.on("positionUpdate", (playerPos) => {
 //   }
 // });
 
-canvas.style.width = `${101 / window.devicePixelRatio}vw`;
+function clamp(x, a, b) {
+  return Math.max(a, Math.min(x, b));
+}
 
-window.addEventListener("resize", () => {
-  canvas.style.width = `${101 / window.devicePixelRatio}vw`;
-});
+// function resizeEvent() {
+//   // canvas.style.width = `${clamp(101 / window.devicePixelRatio, 0, 100)}vw`;
+
+//   var htmlDocWidth = window.innerWidth;
+
+//   $("#canvas").css("max-width", htmlDocWidth);
+// }
+
+// window.addEventListener("resize", resizeEvent);
 
 document.addEventListener("mousemove", function (event) {
   if (selfID) {
@@ -114,6 +126,7 @@ document.addEventListener("mousemove", function (event) {
 
 let last_rotation = 0;
 
+let time = 0;
 let i = 0;
 function render() {
   app.stage.removeChildren();
@@ -131,10 +144,25 @@ function render() {
     camera.setTargetPosition(clientBalls[selfID].pos);
     camera.updateCamera();
 
-    mainContainer.x = -camera.pos.x + canvas.width / 2;
-    mainContainer.y = -camera.pos.y + canvas.height / 2;
-    // console.log(1 / zoom);
-    // mainContainer.scale.set(1 / zoom);
+    // mainContainer.pivot.set(-canvas.width / 2, -canvas.height / 2);
+
+    mainContainer.x = app.screen.width / 2;
+    mainContainer.y = app.screen.height / 2;
+
+    mainContainer.pivot.x = mainContainer.width / 2 + camera.pos.x;
+    mainContainer.pivot.y = mainContainer.height / 2 + camera.pos.y;
+
+    mainContainer.scale.set(1 / devicePixelRatio);
+
+    // app.resolution = devicePixelRatio;
+
+    const pivotGraphic = new PIXI.Graphics();
+    pivotGraphic.beginFill(0xff0000);
+    pivotGraphic.drawCircle(0, 0, 5); // Adjust the circle radius as needed
+    pivotGraphic.endFill();
+
+    mainContainer.addChild(pivotGraphic);
+
     app.stage.addChild(mainContainer);
   }
 
@@ -146,24 +174,22 @@ function render() {
 
   requestAnimationFrame(render);
 
+  time += 1.0 / 60;
+
   i += 1;
-  i %= 30;
+  i %= 60;
 }
 
 requestAnimationFrame(render);
 
-// window.addEventListener("resize", () => {
-//   // app.renderer.resize(window.innerWidth, window.innerHeight);
+window.addEventListener("resize", () => {
+  app.renderer.resize(window.innerWidth, window.innerHeight);
+});
 
-//   const newWidth = window.innerWidth;
-//   const newHeight = window.innerHeight;
-
-//   app.renderer.resize(newWidth, newHeight);
-//   // app.stage.width = newWidth;
-//   // app.stage.height = newHeight;
-
-//   app.renderer.resolution = window.devicePixelRatio;
-// });
+document.body.addEventListener("mousedown", () => {
+  clientBalls[selfID].lastHitTime = time;
+  socket.emit("userAttack", clientBalls[selfID].lastHitTime);
+});
 
 // form.onsubmit = function (e) {
 //   e.preventDefault();

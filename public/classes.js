@@ -89,10 +89,24 @@ class Player {
 
     const graphics = new PIXI.Graphics();
 
+    const texture = PIXI.Texture.from("assets/sword_1.png");
+    const sprite = new PIXI.Sprite(texture);
+
+    sprite.rotation = HALF_PI;
+
+    sprite.scale.set(0.5);
+
+    sprite.anchor.set(0.5, 0.5);
+
+    sprite.y += this.r * 0.75;
+    sprite.x -= this.r * 1.4;
+
     const handSize = this.r * 0.375;
     const handOffset = this.r * 0.75;
 
     graphics.lineStyle(5, 0x35354d);
+
+    this.container.addChild(sprite);
 
     graphics.beginFill(0x7c5d4f);
     graphics.drawCircle(handOffset, handOffset, handSize);
@@ -135,11 +149,24 @@ class Player {
     this.container.x = lerp(this.container.x, this.pos.x, 0.15);
     this.container.y = lerp(this.container.y, this.pos.y, 0.15);
 
-    if (!this.player)
+    if (!this.player) {
       this.container.rotation =
-        lerpWithWrap(this.container.rotation - HALF_PI, this.angle, 0.33) +
+        lerpWithWrap((this.lastRotation || 0) - HALF_PI, this.angle, 0.33) +
         HALF_PI;
-    else this.container.rotation = this.angle - HALF_PI;
+      this.lastRotation = this.container.rotation;
+    } else {
+      this.container.rotation = this.angle - HALF_PI;
+    }
+
+    if (this.lastHitTime) {
+      // console.log(this.lastHitTime);
+      // console.log(getRotationOffsetFromTime(this.lastHitTime, Math.PI));
+      this.container.rotation -= getRotationOffsetFromTime(
+        this.lastHitTime,
+        Math.PI
+      );
+      console.log(this.lastHitTime);
+    }
 
     mainContainer.addChild(this.container);
 
@@ -172,4 +199,18 @@ class Camera {
   setTargetPosition(pos) {
     this.targetPos = pos;
   }
+}
+
+function getRotationOffsetFromTime(lastHitTime, max) {
+  const SPEED = 5;
+  let timeSinceHit = time * SPEED - lastHitTime * SPEED;
+
+  let p1 = 0.5;
+  let p2 = p1 + 1;
+
+  if (timeSinceHit >= 0 && timeSinceHit <= p1) return (timeSinceHit / p1) * max;
+  if (timeSinceHit > p1 && timeSinceHit <= p2)
+    return (1 - (timeSinceHit - p1) / (p2 - p1)) * max;
+
+  return 0;
 }
