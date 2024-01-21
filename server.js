@@ -54,6 +54,34 @@ class Vector {
 
 const FRICTION = 0.75;
 
+// class Weapon {
+//   constructor(damage, knockback, cooldown, scaling, collider) {
+//     this.scaling = scaling;
+//     this.damage = damage;
+//     this.knockback = knockback;
+//     this.cooldown = cooldown;
+//     this.collider = collider;
+//   }
+
+//   cooldownOver(lastHitTime) {
+//     if (lastHitTime + this.cooldown < time) return true;
+//     // console.log(lastHitTime + this.cooldown + " - " + time);
+//     return false;
+//   }
+// }
+
+// class AttackCollider {
+//   constructor(r, dist) {
+//     this.r = r;
+//     this.dist = dist;
+
+//   }
+
+//   isInside(coords){
+
+//   }
+// }
+
 class Player {
   constructor(x, y, r, speed) {
     this.pos = new Vector(x, y);
@@ -80,8 +108,8 @@ class Player {
 
     if (distanceVec.mag() <= r * 2) {
       const dir = distanceVec.unit();
-      this.vel.x += dir.x * 1.5;
-      this.vel.y += dir.y * 1.5;
+      this.vel.x += dir.x * 0.75;
+      this.vel.y += dir.y * 0.75;
     }
   }
 
@@ -216,15 +244,18 @@ function connected(socket) {
   // });
 
   socket.on("userCommands", (data) => {
-    // console.log(serverBalls[socket.id]);
-    // console.log(data);
-    serverBalls[socket.id].left = data.left;
-    serverBalls[socket.id].up = data.up;
-    serverBalls[socket.id].right = data.right;
-    serverBalls[socket.id].down = data.down;
-    serverBalls[socket.id].action = data.action;
+    if (!serverBalls[socket.id]) {
+      serverBalls[socket.id] = {};
+    }
+
+    for (const key in data) {
+      serverBalls[socket.id][key] = data[key];
+    }
 
     serverBalls[socket.id].input();
+
+    console.log(data);
+    console.log(serverBalls[socket.id]);
   });
 
   socket.on("userRotation", (angle) => {
@@ -288,7 +319,7 @@ function serverLoop() {
   if (
     !Object.values(newData).every((value) => Object.keys(value).length === 0)
   ) {
-    console.log(newData);
+    // console.log(newData);
     io.emit("positionUpdate", newData);
   }
 

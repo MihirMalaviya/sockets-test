@@ -168,6 +168,7 @@ function render() {
 
   // reversed, because the player is first in the dict and we want the player to appear on top
   for (let id of Object.keys(clientBalls).reverse()) {
+    // for (let id in clientBalls) {
     clientBalls[id].draw();
   }
   // userInterface();
@@ -187,8 +188,14 @@ window.addEventListener("resize", () => {
 });
 
 document.body.addEventListener("mousedown", () => {
-  clientBalls[selfID].lastHitTime = time;
-  socket.emit("userAttack", clientBalls[selfID].lastHitTime);
+  if (
+    clientBalls[selfID].weapon.cooldownOver(
+      clientBalls[selfID].lastHitTime || 0
+    )
+  ) {
+    clientBalls[selfID].lastHitTime = time;
+    socket.emit("userAttack", clientBalls[selfID].lastHitTime);
+  }
 });
 
 // form.onsubmit = function (e) {

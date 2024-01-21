@@ -76,6 +76,41 @@ function deg2Rad(degrees) {
   return degrees * (Math.PI / 180);
 }
 
+class Weapon {
+  constructor(filename, damage, knockback, cooldown, offset, scaling) {
+    this.scaling = scaling;
+    this.offset = offset.mult(this.scaling);
+    this.scale = 0.5 * this.scaling;
+    this.dir = "assets/" + filename;
+    this.damage = damage;
+    this.knockback = knockback;
+    this.cooldown = cooldown;
+
+    this.container = new PIXI.Container();
+    const texture = PIXI.Texture.from(this.dir);
+    const sprite = new PIXI.Sprite(texture);
+
+    sprite.rotation = HALF_PI;
+
+    sprite.scale.set(0.5);
+
+    sprite.anchor.set(0.5, 0.5);
+
+    sprite.x -= this.scaling * offset.x;
+    sprite.y += this.scaling * offset.y;
+
+    this.container.addChild(sprite);
+  }
+
+  cooldownOver(lastHitTime) {
+    // return true;
+
+    if (lastHitTime + this.cooldown < time) return true;
+    console.log(lastHitTime + this.cooldown + " - " + time);
+    return false;
+  }
+}
+
 class Player {
   constructor(x, y, r) {
     this.pos = new Vector(x, y);
@@ -89,24 +124,33 @@ class Player {
 
     const graphics = new PIXI.Graphics();
 
-    const texture = PIXI.Texture.from("assets/sword_1.png");
-    const sprite = new PIXI.Sprite(texture);
+    this.weapon = new Weapon(
+      "sword_1.png",
+      40,
+      5,
+      0.2,
+      new Vector(1.4, 0.75),
+      this.r
+    );
 
-    sprite.rotation = HALF_PI;
+    // const texture = PIXI.Texture.from("assets/sword_1.png");
+    // const sprite = new PIXI.Sprite(texture);
 
-    sprite.scale.set(0.5);
+    // sprite.rotation = HALF_PI;
 
-    sprite.anchor.set(0.5, 0.5);
+    // sprite.scale.set(0.5);
 
-    sprite.y += this.r * 0.75;
-    sprite.x -= this.r * 1.4;
+    // sprite.anchor.set(0.5, 0.5);
+
+    // sprite.y += this.r * 0.75;
+    // sprite.x -= this.r * 1.4;
+
+    this.container.addChild(this.weapon.container);
 
     const handSize = this.r * 0.375;
     const handOffset = this.r * 0.75;
 
     graphics.lineStyle(5, 0x35354d);
-
-    this.container.addChild(sprite);
 
     graphics.beginFill(0x7c5d4f);
     graphics.drawCircle(handOffset, handOffset, handSize);
@@ -163,7 +207,9 @@ class Player {
       // console.log(getRotationOffsetFromTime(this.lastHitTime, Math.PI));
       this.container.rotation -= getRotationOffsetFromTime(
         this.lastHitTime,
-        Math.PI
+        Math.PI,
+        this.weapon.cooldown,
+        easeOutBack
       );
       console.log(this.lastHitTime);
     }
@@ -201,16 +247,46 @@ class Camera {
   }
 }
 
-function getRotationOffsetFromTime(lastHitTime, max) {
-  const SPEED = 5;
-  let timeSinceHit = time * SPEED - lastHitTime * SPEED;
+let s;
+function easeLinear(t, b, c, d) {
+  return (c * t) / d + b;
+}
+function easeOutBack(t, b, c, d) {
+  if (s == undefined) s = 1.70158;
+  return c * ((t = t / d - 1) * t * ((s + 1) * t + s) + 1) + b;
+}
 
-  let p1 = 0.5;
-  let p2 = p1 + 1;
+// function getRotationOffsetFromTime(lastHitTime, max) {
+//   const SPEED = 5;
+//   let timeSinceHit = time * SPEED - lastHitTime * SPEED;
 
-  if (timeSinceHit >= 0 && timeSinceHit <= p1) return (timeSinceHit / p1) * max;
-  if (timeSinceHit > p1 && timeSinceHit <= p2)
-    return (1 - (timeSinceHit - p1) / (p2 - p1)) * max;
+//   let p1 = 0.5;
+//   let p2 = p1 + 1;
+
+//   if (timeSinceHit >= 0 && timeSinceHit <= p1) {
+//     return lerp(0, max, timeSinceHit / p1);
+//   }
+
+//   if (timeSinceHit > p1 && timeSinceHit <= p2) {
+//     return lerp(max, 0, (timeSinceHit - p1) / (p2 - p1));
+//   }
+
+//   return 0;
+// }
+
+function getRotationOffsetFromTime(lastHitTime, max, duration, easing) {
+  let timeSinceHit = time - lastHitTime;
+
+  let p1 = 0.1 * duration;
+  let p2 = p1 + duration;
+
+  if (timeSinceHit >= 0 && timeSinceHit <= p1) {
+    return easing(timeSinceHit, 0, max, p1);
+  }
+
+  if (timeSinceHit > p1 && timeSinceHit <= p2) {
+    return max - easing(timeSinceHit - p1, 0, max, p2 - p1);
+  }
 
   return 0;
 }
