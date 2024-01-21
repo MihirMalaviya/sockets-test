@@ -49,12 +49,13 @@ function userInput(obj) {
 }
 
 function emitUserCommands(obj) {
-  let userCommands = {
-    left: obj.left || false,
-    up: obj.up || false,
-    right: obj.right || false,
-    down: obj.down || false,
-    action: obj.action || false,
-  };
+  if (lastUserCommands) {
+    let userCommands = {};
+
+    userCommands[left] = obj.left;
+  }
+
+  lastUserCommands = userCommands;
+
   socket.emit("userCommands", userCommands);
 }
