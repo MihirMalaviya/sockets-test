@@ -1,25 +1,40 @@
 let justPressed = false;
-
 let lastUserCommands = {};
 
 function userInput(obj) {
   canvas.addEventListener("keydown", function (e) {
-    if (e.code === "ArrowLeft" || e.code === "KeyA") obj.left = true;
-    if (e.code === "ArrowUp" || e.code === "KeyW") obj.up = true;
-    if (e.code === "ArrowRight" || e.code === "KeyD") obj.right = true;
-    if (e.code === "ArrowDown" || e.code === "KeyS") obj.down = true;
-    if (e.code === "Space") obj.action = true;
-    emitChangedUserCommands(obj);
+    handleKeyEvent(e, obj, true);
   });
 
   canvas.addEventListener("keyup", function (e) {
-    if (e.code === "ArrowLeft" || e.code === "KeyA") obj.left = false;
-    if (e.code === "ArrowUp" || e.code === "KeyW") obj.up = false;
-    if (e.code === "ArrowRight" || e.code === "KeyD") obj.right = false;
-    if (e.code === "ArrowDown" || e.code === "KeyS") obj.down = false;
-    if (e.code === "Space") obj.action = false;
-    emitChangedUserCommands(obj);
+    handleKeyEvent(e, obj, false);
   });
+
+  canvas.addEventListener("mousedown", function (e) {
+    handleMouseEvent(e, obj, true);
+  });
+
+  canvas.addEventListener("mouseup", function (e) {
+    handleMouseEvent(e, obj, false);
+  });
+}
+
+function handleKeyEvent(e, obj, isKeyDown) {
+  if (e.code === "ArrowLeft" || e.code === "KeyA") obj.left = isKeyDown;
+  if (e.code === "ArrowUp" || e.code === "KeyW") obj.up = isKeyDown;
+  if (e.code === "ArrowRight" || e.code === "KeyD") obj.right = isKeyDown;
+  if (e.code === "ArrowDown" || e.code === "KeyS") obj.down = isKeyDown;
+  if (e.code === "Space") obj.action = isKeyDown;
+  emitChangedUserCommands(obj);
+}
+
+function handleMouseEvent(e, obj, isMouseDown) {
+  if (e.button === 0) {
+    obj.mouseLeft = isMouseDown;
+  } else if (e.button === 2) {
+    obj.mouseRight = isMouseDown;
+  }
+  emitChangedUserCommands(obj);
 }
 
 function emitChangedUserCommands(obj) {
@@ -30,5 +45,7 @@ function emitChangedUserCommands(obj) {
     }
   }
   lastUserCommands = { ...obj };
-  if (changedUserCommands) socket.emit("userCommands", changedUserCommands);
+  if (Object.keys(changedUserCommands).length > 0) {
+    socket.emit("userCommands", changedUserCommands);
+  }
 }

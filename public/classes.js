@@ -120,10 +120,6 @@ class Player {
 
     this.player = false;
 
-    this.container = new PIXI.Container();
-
-    const graphics = new PIXI.Graphics();
-
     this.weapon = new Weapon(
       "sword_1.png",
       40,
@@ -133,34 +129,34 @@ class Player {
       this.r
     );
 
-    // const texture = PIXI.Texture.from("assets/sword_1.png");
-    // const sprite = new PIXI.Sprite(texture);
+    // this.borderColor = 0x35354d;
+    this.borderColor = 0x3f354d;
+    this.skinColor = 0x7c5d4f;
 
-    // sprite.rotation = HALF_PI;
+    this.redraw();
+  }
 
-    // sprite.scale.set(0.5);
+  redraw() {
+    const graphics = new PIXI.Graphics();
 
-    // sprite.anchor.set(0.5, 0.5);
-
-    // sprite.y += this.r * 0.75;
-    // sprite.x -= this.r * 1.4;
+    this.container = new PIXI.Container();
 
     this.container.addChild(this.weapon.container);
 
     const handSize = this.r * 0.375;
     const handOffset = this.r * 0.75;
 
-    graphics.lineStyle(5, 0x35354d);
+    graphics.lineStyle(5, this.borderColor);
 
-    graphics.beginFill(0x7c5d4f);
+    graphics.beginFill(this.skinColor);
     graphics.drawCircle(handOffset, handOffset, handSize);
     graphics.endFill();
 
-    graphics.beginFill(0x7c5d4f);
+    graphics.beginFill(this.skinColor);
     graphics.drawCircle(-handOffset, handOffset, handSize);
     graphics.endFill();
 
-    graphics.beginFill(0x7c5d4f);
+    graphics.beginFill(this.skinColor);
     graphics.drawCircle(0, 0, this.r);
     graphics.endFill();
 

@@ -54,21 +54,22 @@ class Vector {
 
 const FRICTION = 0.75;
 
-// class Weapon {
-//   constructor(damage, knockback, cooldown, scaling, collider) {
-//     this.scaling = scaling;
-//     this.damage = damage;
-//     this.knockback = knockback;
-//     this.cooldown = cooldown;
-//     this.collider = collider;
-//   }
+class Weapon {
+  constructor(damage, knockback, cooldown, scaling, collider) {
+    this.scaling = scaling;
+    this.damage = damage;
+    this.knockback = knockback;
+    this.cooldown = cooldown;
+    this.collider = collider;
+  }
 
-//   cooldownOver(lastHitTime) {
-//     if (lastHitTime + this.cooldown < time) return true;
-//     // console.log(lastHitTime + this.cooldown + " - " + time);
-//     return false;
-//   }
-// }
+  cooldownOver(lht) {
+    // console.log(lht + " - " + this.cooldown + " - " + time);
+    if (lht + this.cooldown < time) return true;
+    // console.log(lht + this.cooldown + " - " + time);
+    return false;
+  }
+}
 
 // class AttackCollider {
 //   constructor(r, dist) {
@@ -87,7 +88,7 @@ class Player {
     this.pos = new Vector(x, y);
     this.vel = new Vector(0, 0);
     this.acc = new Vector(0, 0);
-    this.angle = 0;
+    this.a = 0;
     this.r = r;
     this.speed = speed;
 
@@ -96,6 +97,10 @@ class Player {
     this.left = false;
     this.right = false;
     this.action = false;
+
+    this.lht = 0;
+
+    this.weapon = new Weapon(10, 1, 0.2, 1, null);
   }
 
   setPosition(x, y) {
@@ -111,6 +116,23 @@ class Player {
       this.vel.x += dir.x * 0.75;
       this.vel.y += dir.y * 0.75;
     }
+  }
+
+  handleHitEvent() {
+    // console.log(
+    //   this.mouseLeft +
+    //     " - " +
+    //     this.mouseRight +
+    //     " - " +
+    //     this.weapon.cooldownOver()
+    // );
+
+    if (
+      (this.mouseLeft || this.mouseRight) &&
+      this.weapon.cooldownOver(this.lht)
+    )
+      return true;
+    return false;
   }
 
   update() {
@@ -254,20 +276,20 @@ function connected(socket) {
 
     serverBalls[socket.id].input();
 
-    console.log(data);
-    console.log(serverBalls[socket.id]);
+    // console.log(data);
+    // console.log(serverBalls[socket.id]);
   });
 
   socket.on("userRotation", (angle) => {
-    if (serverBalls[socket.id]) serverBalls[socket.id].angle = angle || 0;
+    if (serverBalls[socket.id]) serverBalls[socket.id].a = angle || 0;
     // console.log(angle);
   });
 
-  socket.on("userAttack", (lastHitTime) => {
-    if (serverBalls[socket.id])
-      serverBalls[socket.id].lastHitTime = lastHitTime || 0;
-    console.log(lastHitTime);
-  });
+  // socket.on("userAttack", (lht) => {
+  //   if (serverBalls[socket.id])
+  //     serverBalls[socket.id].lht = lht || 0;
+  //   console.log(lht);
+  // });
 
   // socket.on("update", (data) => {
   //   console.log(`${data.x} -- ${data.y}`);
@@ -283,13 +305,25 @@ let time = 0;
 const POSITION_PRECISION = 2;
 
 function serverLoop() {
+  let needSendHit = [];
   for (let id in serverBalls) {
+    if (serverBalls[id].handleHitEvent()) {
+      serverBalls[id].lht = time;
+      needSendHit.push(id);
+      console.log(time);
+      console.log(serverBalls[id].lht);
+    }
+
     serverBalls[id].update();
   }
+
+  // console.log(needSendHit);
 
   let newData = {};
   for (let id in serverBalls) {
     newData[id] = {};
+
+    // console.log(serverBalls[id].a);
 
     const roundX =
       serverBalls[id].pos.x - (serverBalls[id].pos.x % POSITION_PRECISION);
@@ -303,12 +337,12 @@ function serverLoop() {
       newData[id].y = playerData[id].y = roundY;
     }
 
-    if (serverBalls[id].angle !== playerData[id].a) {
-      newData[id].a = playerData[id].a = serverBalls[id].angle;
+    if (serverBalls[id].a !== playerData[id].a) {
+      newData[id].a = playerData[id].a = serverBalls[id].a;
     }
 
-    if (serverBalls[id].lastHitTime !== playerData[id].lh) {
-      serverBalls[id].lastHitTime = newData[id].lh = playerData[id].lh = true;
+    if (needSendHit.includes(id)) {
+      newData[id].lh = true;
     }
 
     if (Object.keys(newData[id]).length === 0) {

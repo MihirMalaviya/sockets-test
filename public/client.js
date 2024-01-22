@@ -46,6 +46,8 @@ socket.on("connect", () => {
   clientBalls[socket.id] = new Player(startX, startY, 32);
   clientBalls[socket.id].player = true;
   clientBalls[socket.id].maxSpeed = 5;
+  // clientBalls[socket.id].borderColor = 0x45354d;
+  // clientBalls[socket.id].redraw();
   userInput(clientBalls[socket.id]);
   socket.emit("newPlayer", { x: startX, y: startY });
 });
@@ -79,7 +81,10 @@ socket.on("positionUpdate", (playerPos) => {
       if (playerPos[id].y) clientBalls[id].pos.y = playerPos[id].y;
       if (playerPos[id].a && id !== selfID)
         clientBalls[id].angle = deg2Rad(playerPos[id].a * 5 - 180);
-      if (playerPos[id].lh && id !== selfID) {
+      if (
+        playerPos[id].lh
+        // && id !== selfID
+      ) {
         clientBalls[id].lastHitTime = time;
       }
     }
@@ -187,16 +192,16 @@ window.addEventListener("resize", () => {
   app.renderer.resize(window.innerWidth, window.innerHeight);
 });
 
-document.body.addEventListener("mousedown", () => {
-  if (
-    clientBalls[selfID].weapon.cooldownOver(
-      clientBalls[selfID].lastHitTime || 0
-    )
-  ) {
-    clientBalls[selfID].lastHitTime = time;
-    socket.emit("userAttack", clientBalls[selfID].lastHitTime);
-  }
-});
+// document.body.addEventListener("mousedown", () => {
+//   if (
+//     clientBalls[selfID].weapon.cooldownOver(
+//       clientBalls[selfID].lastHitTime || 0
+//     )
+//   ) {
+//     clientBalls[selfID].lastHitTime = time;
+//     socket.emit("userAttack", clientBalls[selfID].lastHitTime);
+//   }
+// });
 
 // form.onsubmit = function (e) {
 //   e.preventDefault();
