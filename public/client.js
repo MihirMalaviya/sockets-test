@@ -45,7 +45,10 @@ socket.on("connect", () => {
   let startY = 40 + Math.random() * 400;
   clientBalls[socket.id] = new Player(startX, startY, 32);
   clientBalls[socket.id].player = true;
-  clientBalls[socket.id].maxSpeed = 5;
+
+  clientBalls[socket.id].setHealth(100);
+
+  clientBalls[socket.id].healthbar.color = 0x8ecc51;
   // clientBalls[socket.id].borderColor = 0x45354d;
   // clientBalls[socket.id].redraw();
   userInput(clientBalls[socket.id]);
@@ -59,7 +62,8 @@ socket.on("updatePlayers", (players) => {
     if (clientBalls[id] === undefined && id !== socket.id) {
       // make a new player
       clientBalls[id] = new Player(players[id].x, players[id].y, 32);
-      clientBalls[id].maxSpeed = 5;
+      clientBalls[id].angle = deg2Rad(players[id].a * 5 + 180);
+      clientBalls[id].setHealth(players[id].health);
     }
     playersFound[id] = true;
 
@@ -79,6 +83,11 @@ socket.on("positionUpdate", (playerPos) => {
     if (clientBalls[id] !== undefined) {
       if (playerPos[id].x) clientBalls[id].pos.x = playerPos[id].x;
       if (playerPos[id].y) clientBalls[id].pos.y = playerPos[id].y;
+      if (playerPos[id].health) {
+        clientBalls[id].setHealth(playerPos[id].health);
+        console.log("I DID IT");
+        // console.log(clientBalls[id].health);
+      }
       if (playerPos[id].a && id !== selfID)
         clientBalls[id].angle = deg2Rad(playerPos[id].a * 5 - 180);
       if (
