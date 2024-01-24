@@ -263,6 +263,8 @@ function connected(socket) {
         " - " +
         playerData[socket.id].y
     );
+
+    playerData[socket.id].health = serverBalls[socket.id].health;
     console.log("Current number of players: " + Object.keys(playerData).length);
     console.log("players dictionary: ", playerData);
 
