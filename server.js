@@ -1,4 +1,4 @@
-const DEPLOY = 0;
+const DEPLOY = 1;
 
 class Vector {
   constructor(x, y) {
