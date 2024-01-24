@@ -20,11 +20,17 @@ function userInput(obj) {
 }
 
 function handleKeyEvent(e, obj, isKeyDown) {
+  if (e.key === "Shift") obj.dash = isKeyDown;
+
   if (e.code === "ArrowLeft" || e.code === "KeyA") obj.left = isKeyDown;
   if (e.code === "ArrowUp" || e.code === "KeyW") obj.up = isKeyDown;
   if (e.code === "ArrowRight" || e.code === "KeyD") obj.right = isKeyDown;
   if (e.code === "ArrowDown" || e.code === "KeyS") obj.down = isKeyDown;
   if (e.code === "Space") obj.action = isKeyDown;
+  if (e.code === "Digit1" && isKeyDown) obj.num = 1;
+  if (e.code === "Digit2" && isKeyDown) obj.num = 2;
+  if (e.code === "Digit3" && isKeyDown) obj.num = 3;
+  // console.log(obj);
   emitChangedUserCommands(obj);
 }
 
@@ -46,6 +52,13 @@ function emitChangedUserCommands(obj) {
   }
   lastUserCommands = { ...obj };
   if (Object.keys(changedUserCommands).length > 0) {
+    if (changedUserCommands.num) {
+      clientBalls[socket.id].hotbarIndex = changedUserCommands.num - 1;
+      clientBalls[socket.id].redraw();
+      console.log(changedUserCommands.num - 1);
+    }
+    // console.log(changedUserCommands.num);
+
     socket.emit("userCommands", changedUserCommands);
   }
 }

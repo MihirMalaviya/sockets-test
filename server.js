@@ -1,4 +1,4 @@
-const DEPLOY = 1;
+const DEPLOY = 0;
 
 class Vector {
   constructor(x, y) {
@@ -253,7 +253,7 @@ function connected(socket) {
   socket.on("newPlayer", (data) => {
     console.log("New client connected, with id: " + socket.id);
 
-    serverBalls[socket.id] = new Player(data.x, data.y, 32, 1.25);
+    serverBalls[socket.id] = new Player(data.x, data.y, 32, 1.5);
     data = { x: Math.round(data.x), y: Math.round(data.y) };
 
     playerData[socket.id] = data;
@@ -328,10 +328,6 @@ function connected(socket) {
   //   console.log(lht);
   // });
 
-  // socket.on("update", (data) => {
-  //   console.log(`${data.x} -- ${data.y}`);
-  // });
-
   // socket.on("clientName", (data) => {
   //   serverBalls[socket.id].name = data;
   //   console.log(`${data} joined`);
@@ -344,6 +340,14 @@ const POSITION_PRECISION = 2;
 function serverLoop() {
   let needSendHit = [];
   for (let id in serverBalls) {
+    if (serverBalls[id].dash) {
+      serverBalls[id].applyForce(
+        30,
+        serverBalls[id].acc.add(serverBalls[id].vel).unit()
+      );
+      serverBalls[id].dash = false;
+    }
+
     if (serverBalls[id].handleHitEvent()) {
       serverBalls[id].lht = time;
       needSendHit.push(id);

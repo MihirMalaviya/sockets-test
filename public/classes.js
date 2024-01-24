@@ -77,15 +77,13 @@ function deg2Rad(degrees) {
 }
 
 class Weapon {
-  constructor(filename, damage, knockback, cooldown, offset, scaling, size) {
+  constructor(filename, cooldown, offset, scaling) {
     this.canHit = true;
 
     this.scaling = scaling;
     this.offset = offset.mult(this.scaling);
     this.scale = 0.5 * this.size;
     this.dir = "assets/" + filename;
-    this.damage = damage;
-    this.knockback = knockback;
     this.cooldown = cooldown;
 
     this.container = new PIXI.Container();
@@ -113,31 +111,53 @@ class Weapon {
   }
 }
 
+function drawCookie() {
+  const graphics = new PIXI.Graphics();
+
+  const borderColor = 0x3f354d;
+  const primaryColor = 0x856d57;
+  const secondaryColor = 0x605149;
+
+  const chips = [
+    [11, 8],
+    [-7, 9],
+    [8, -10],
+    [-11, -7],
+  ];
+
+  graphics.lineStyle(5, borderColor);
+  graphics.beginFill(primaryColor);
+  graphics.drawCircle(0, 0, 25);
+  graphics.endFill();
+
+  graphics.lineStyle(0);
+  for (const chip of chips) {
+    graphics.beginFill(secondaryColor);
+    graphics.drawCircle(chip[0], chip[1], 5);
+    graphics.endFill();
+  }
+
+  return graphics;
+}
+
 class Food {
-  constructor(filename, cost, healamount, offset, scaling, size) {
+  constructor(draw, cost, healamount, offset, scaling) {
     this.canHit = false;
 
     this.scaling = scaling;
     this.offset = offset.mult(this.scaling);
     this.scale = 0.5 * this.size;
-    this.dir = "assets/" + filename;
     this.cost = cost;
     this.heal = healamount;
 
+    this.draw = draw;
+
     this.container = new PIXI.Container();
-    const texture = PIXI.Texture.from(this.dir);
-    const sprite = new PIXI.Sprite(texture);
 
-    sprite.rotation = HALF_PI;
+    this.container.x += offset.x * scaling;
+    this.container.y += offset.y * scaling;
 
-    sprite.scale.set(size);
-
-    sprite.anchor.set(0.5, 0.5);
-
-    sprite.x -= this.scaling * offset.x;
-    sprite.y += this.scaling * offset.y;
-
-    this.container.addChild(sprite);
+    this.container.addChild(draw());
   }
 }
 
@@ -154,26 +174,10 @@ class Player {
     this.player = false;
 
     this.hotbar = [
-      new Weapon(
-        "sword_1.png",
-        30,
-        5,
-        0.33,
-        new Vector(1.4, 0.75),
-        this.r,
-        this.r
-      ),
-      new Weapon(
-        "sword_1.png",
-        30,
-        5,
-        0.33,
-        new Vector(1.4, 0.75),
-        this.r,
-        this.r
-      ),
+      new Weapon("sword_1.png", 0.33, new Vector(1.4, 0.75), this.r),
+      new Weapon("crossbow_1.png", 0.33, new Vector(0, 1.25), this.r),
       // TODO change to png
-      new Food("Cookie.webp", 15, 40, new Vector(0, 1), this.r, 0.1),
+      new Food(drawCookie, 15, 40, new Vector(0, 1.66), this.r),
     ];
 
     this.hotbarIndex = 0;
@@ -188,6 +192,10 @@ class Player {
 
   redraw() {
     const graphics = new PIXI.Graphics();
+
+    let lastpos;
+    if (this.container) lastpos = [this.container.x, this.container.y];
+    else lastpos = [this.pos.x, this.pos.y];
 
     this.container = new PIXI.Container();
 
@@ -211,6 +219,9 @@ class Player {
     graphics.endFill();
 
     this.container.addChild(graphics);
+
+    this.container.x = lastpos[0];
+    this.container.y = lastpos[1];
   }
 
   holding() {
@@ -291,10 +302,17 @@ class Player {
     graphics.lineStyle(2, 0x0000ff);
     graphics.drawRect(this.pos.x, this.pos.y, 1, 1);
 
-    // debug
+    // graphics.lineStyle(1, 0x0000ff);
+    // graphics.drawCircle(this.pos.x, this.pos.y, this.r);
 
-    graphics.lineStyle(1, 0x0000ff);
-    graphics.drawCircle(this.pos.x, this.pos.y, this.r);
+    graphics
+      .lineStyle(1, 0x00ff00)
+      .moveTo(this.pos.x, this.pos.y)
+      .lineTo(
+        this.pos.x + this.r * 2 * Math.cos(this.angle),
+        this.pos.y + this.r * 2 * Math.sin(this.angle)
+      )
+      .closePath();
 
     graphics.lineStyle(1, 0xff0000);
     graphics.arc(
@@ -311,21 +329,30 @@ class Player {
 }
 
 class HealthBar {
-  constructor(offset, width, max, color) {
+  constructor(offset, width, max) {
     this.offset = offset;
     this.width = width;
     this.max = this.val = max;
     this.targetVal = max;
     this.lerpSpeed = 0.25;
 
-    if (color != null) this.color = color;
-    else this.color = 0xcc5151;
+    this.setColorType(0);
 
     this.container = new PIXI.Container();
     this.graphics = new PIXI.Graphics();
     this.container.addChild(this.graphics);
 
     this.redraw();
+  }
+
+  setColorType(t) {
+    if (t == 0) {
+      this.fg = 0xdc0b0b;
+      this.bg = 0x641414;
+    } else if (t == 1) {
+      this.fg = 0x8ff528;
+      this.bg = 0x2f5200;
+    }
   }
 
   setVal(val) {
@@ -341,7 +368,7 @@ class HealthBar {
   redraw() {
     this.graphics.clear();
 
-    this.graphics.beginFill(0x3d3f42);
+    this.graphics.beginFill(this.bg);
     this.graphics.drawCircle(
       this.offset.x - this.width / 2,
       this.offset.y + 4,
@@ -361,7 +388,7 @@ class HealthBar {
     );
     this.graphics.endFill();
 
-    this.graphics.beginFill(this.color);
+    this.graphics.beginFill(this.fg);
     this.graphics.drawRect(
       this.offset.x - this.width / 2,
       this.offset.y,

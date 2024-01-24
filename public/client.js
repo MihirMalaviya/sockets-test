@@ -1,4 +1,4 @@
-const DEPLOY = 1;
+const DEPLOY = 0;
 
 let socket;
 
@@ -48,7 +48,7 @@ socket.on("connect", () => {
 
   clientBalls[socket.id].setHealth(100);
 
-  clientBalls[socket.id].healthbar.color = 0x8ecc51;
+  clientBalls[socket.id].healthbar.setColorType(1);
   // clientBalls[socket.id].borderColor = 0x45354d;
   // clientBalls[socket.id].redraw();
   userInput(clientBalls[socket.id]);
@@ -166,7 +166,7 @@ function render() {
     mainContainer.pivot.x = mainContainer.width / 2 + camera.pos.x;
     mainContainer.pivot.y = mainContainer.height / 2 + camera.pos.y;
 
-    mainContainer.scale.set(1 / devicePixelRatio);
+    mainContainer.scale.set((1 / devicePixelRatio) * (app.screen.width / 1920));
 
     // app.resolution = devicePixelRatio;
 
@@ -187,12 +187,12 @@ function render() {
   }
   // userInterface();
 
-  requestAnimationFrame(render);
-
   time += 1.0 / 60;
 
   i += 1;
   i %= 60;
+
+  requestAnimationFrame(render);
 }
 
 requestAnimationFrame(render);
